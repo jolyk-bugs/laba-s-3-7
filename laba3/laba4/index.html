@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Расширенный алгоритм Евклида</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+		}
+
+		.container {
+			max-width: 600px;
+			margin: auto;
+			text-align: center;
+		}
+
+		input {
+			margin: 5px;
+			padding: 5px;
+			width: 80px;
+		}
+
+		button {
+			margin: 10px;
+			padding: 5px 15px;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			cursor: pointer;
+		}
+
+		button:hover {
+			background-color: #45a049;
+		}
+
+		.result {
+			margin-top: 20px;
+			padding: 10px;
+			background-color: #f9f9f9;
+			border: 1px solid #ccc;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 20px;
+		}
+
+		th,
+		td {
+			padding: 8px 12px;
+			border: 1px solid #ccc;
+			text-align: center;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1>Расширенный алгоритм Евклида</h1>
+		<p>Введите значения коэффициентов:</p>
+		<input type="number" id="a" placeholder="a">
+		<input type="number" id="b" placeholder="b">
+		<input type="number" id="d" placeholder="d">
+		<br>
+		<button onclick="calculate()">Вычислить</button>
+		<div id="output" class="result"></div>
+		<table id="steps-table">
+			<thead>
+				<tr>
+					<th>x</th>
+					<th>y</th>
+					<th>ax + by</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</div>
+	<script src="script.js"></script>
+</body>
+
+</html>
