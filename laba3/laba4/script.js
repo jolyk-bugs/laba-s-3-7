@@ -1,48 +1,103 @@
-// Функция расширенного алгоритма Евклида
-function extendedGcd(a, b) {
-    if (b === 0) {
-      return { gcd: a, x: 1, y: 0 };
-    }
-    const { gcd, x: x1, y: y1 } = extendedGcd(b, a % b);
-    return { gcd: gcd, x: y1, y: x1 - Math.floor(a / b) * y1 };
+// Добавляем обработчик событий на изменение типа шифрования
+document.querySelectorAll('input[name="cipherType"]').forEach((el) => {
+    el.addEventListener('change', function () {
+      // Показываем или скрываем настройки для шифра Цезаря
+      document.getElementById('caesarOptions').style.display =
+        this.value === 'caesar' ? 'block' : 'none';
+    });
+  });
+  
+  // Сохраняем регистр символов текста после преобразования
+  function preserveCase(original, transformed) {
+    return original
+      .split('') // Разбиваем исходный текст на массив символов
+      .map((char, i) => {
+        const isLower = char === char.toLowerCase(); // Проверяем, является ли символ строчным
+        const transformedChar = transformed[i] || char; // Берем преобразованный символ или оставляем исходный
+        return isLower ? transformedChar.toLowerCase() : transformedChar.toUpperCase(); // Восстанавливаем регистр
+      })
+      .join(''); // Собираем строку обратно
   }
   
-  // Функция для вычисления решения
-  function calculate() {
-    const a = parseInt(document.getElementById('a').value);
-    const b = parseInt(document.getElementById('b').value);
-    const d = parseInt(document.getElementById('d').value);
-    const output = document.getElementById('output');
-    const tableBody = document.querySelector('#steps-table tbody');
-    tableBody.innerHTML = ""; // Очистка таблицы
+  // Шифр Атбаш
+  function atbash(text, isRussian) {
+    const alphabet = isRussian
+      ? 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ' // Русский алфавит
+      : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'; // Английский алфавит
+    const reversed = alphabet.split('').reverse().join(''); // Создаем перевернутый алфавит
+    const map = new Map(
+      alphabet.split('').map((char, i) => [char, reversed[i]]) // Создаем словарь для сопоставления символов
+    );
+    const transformed = text
+      .toUpperCase() // Преобразуем весь текст в верхний регистр
+      .split('') // Разбиваем текст на символы
+      .map((char) => map.get(char) || char) // Заменяем символ на зеркальный, если он есть в словаре
+      .join(''); // Собираем обратно в строку
+    return preserveCase(text, transformed); // Возвращаем текст с сохранением регистра
+  }
   
-    // Проверка ввода
-    if (isNaN(a) || isNaN(b) || isNaN(d)) {
-      output.textContent = "Пожалуйста, введите корректные значения!";
-      return;
+  // Шифр Цезаря
+  function caesar(text, shift, isRussian, decrypt = false) {
+    const alphabet = isRussian
+      ? 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ' // Русский алфавит
+      : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'; // Английский алфавит
+    const offset = decrypt ? -shift : shift; // Определяем направление сдвига (для шифрования или дешифрования)
+    const transformed = text
+      .toUpperCase() // Преобразуем текст в верхний регистр
+      .split('') // Разбиваем текст на символы
+      .map((char) => {
+        const index = alphabet.indexOf(char); // Находим индекс символа в алфавите
+        if (index === -1) return char; // Если символ не найден, возвращаем его как есть
+        return alphabet[(index + offset + alphabet.length) % alphabet.length]; // Вычисляем новый индекс с учетом сдвига и возвращаем символ
+      })
+      .join(''); // Собираем обратно в строку
+    return preserveCase(text, transformed); // Возвращаем текст с сохранением регистра
+  }
+  
+  // Определяем выбранный язык
+  function detectLanguage() {
+    return document.querySelector('input[name="language"]:checked').value === 'russian';
+  }
+  
+  // Шифрование текста
+  function encrypt() {
+    const text = document.getElementById('textInput').value; // Получаем текст для шифрования
+    const cipherType = document.querySelector('input[name="cipherType"]:checked').value; // Определяем тип шифра
+    const isRussian = detectLanguage(); // Проверяем, выбран ли русский язык
+    let result = ''; // Инициализируем переменную для результата
+  
+    if (cipherType === 'atbash') {
+      result = atbash(text, isRussian); // Шифруем текст шифром Атбаш
+    } else if (cipherType === 'caesar') {
+      const shift = parseInt(document.getElementById('shiftInput').value, 10); // Получаем значение сдвига
+      if (isNaN(shift)) {
+        alert('Введите корректное значение для сдвига!'); // Если сдвиг не задан, показываем ошибку
+        return;
+      }
+      result = caesar(text, shift, isRussian); // Шифруем текст шифром Цезаря
     }
   
-    // Расширенный алгоритм Евклида
-    const { gcd, x, y } = extendedGcd(a, b);
+    document.getElementById('result').textContent = result; // Выводим результат шифрования
+  }
   
-    // Проверяем делимость d на gcd(a, b)
-    if (d % gcd !== 0) {
-      output.textContent = "Невозможно найти целочисленное решение для введенных данных.";
-      return;
+  // Дешифрование текста
+  function decrypt() {
+    const text = document.getElementById('textInput').value; // Получаем текст для дешифрования
+    const cipherType = document.querySelector('input[name="cipherType"]:checked').value; // Определяем тип шифра
+    const isRussian = detectLanguage(); // Проверяем, выбран ли русский язык
+    let result = ''; // Инициализируем переменную для результата
+  
+    if (cipherType === 'atbash') {
+      result = atbash(text, isRussian); // Дешифрование Атбаш идентично шифрованию
+    } else if (cipherType === 'caesar') {
+      const shift = parseInt(document.getElementById('shiftInput').value, 10); // Получаем значение сдвига
+      if (isNaN(shift)) {
+        alert('Введите корректное значение для сдвига!'); // Если сдвиг не задан, показываем ошибку
+        return;
+      }
+      result = caesar(text, shift, isRussian, true); // Дешифруем текст шифром Цезаря
     }
   
-    // Вычисление частного решения
-    const x0 = x * (d / gcd);
-    const y0 = y * (d / gcd);
-    output.textContent = `Решение найдено: x = ${x0}, y = ${y0}`;
-  
-    // Построение таблицы решений (пример для демонстрации)
-    for (let k = -5; k <= 5; k++) {
-      const xk = x0 + k * (b / gcd);
-      const yk = y0 - k * (a / gcd);
-      const axBy = a * xk + b * yk;
-      const row = `<tr><td>${xk}</td><td>${yk}</td><td>${axBy}</td></tr>`;
-      tableBody.innerHTML += row;
-    }
+    document.getElementById('result').textContent = result; // Выводим результат дешифрования
   }
   
